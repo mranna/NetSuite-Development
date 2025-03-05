@@ -12,11 +12,11 @@
 define (['N/record','N/log','N/util', 'N/search'], function(record, log, util, search) {
 
   /**
-  * doGetAll function to get all Employee Bank details from the custom record ''CUSTOMRECORD_2663_ENTITY_BANK_DETAILS''
+  * Function to get all Employee Bank details from the custom record ''CUSTOMRECORD_2663_ENTITY_BANK_DETAILS''
   * offset and limit are optional parameters to get the records in a paginated way.
   */
 
-  function doGetAll(requestParams = {}) {
+  function getEmployeeBankDetails(requestParams = {}) {
     try {
 
       const offset = requestParams.offset ? parseInt(requestParams.offset, 10): 0;
@@ -67,11 +67,13 @@ define (['N/record','N/log','N/util', 'N/search'], function(record, log, util, s
     }
   }
 
-/***
-Can update multiple records for current employees.
-
-***/
-function doPut(requestBody){
+/**
+ * Function to update the existing records in the custom record ''CUSTOMRECORD_2663_ENTITY_BANK_DETAILS'' using the Employee Bank ID and Internal ID.
+ * Supports multiple records update in a single request.
+ * @param {*} requestBody 
+ * @returns 
+ */
+function updateEmployeeBankDetails(requestBody){
   const results = [];
 
   try {
@@ -139,10 +141,14 @@ function doPut(requestBody){
   return JSON.stringify(results);
 }
   
-/***
-Can update multiple records for new employees
-***/
-function doPost(requestBody){
+/**
+ * Function to create new records in the custom record ''CUSTOMRECORD_2663_ENTITY_BANK_DETAILS''.
+ * Supports multiple records creation in a single request.
+ * @param {*} requestBody 
+ * @returns 
+ */
+
+function createEmployeeBankDetails(requestBody){
   const results =[];
 
   try {
@@ -189,8 +195,8 @@ function doPost(requestBody){
 }
   
 return {
-  get:doGetAll,
-  post:doPost,
-  put:doPut,
+  get:getEmployeeBankDetails,
+  post:createEmployeeBankDetails,
+  put:updateEmployeeBankDetails,
 };
 });
