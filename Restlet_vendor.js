@@ -10,7 +10,7 @@
 
 define (['N/record','N/log','N/util', 'N/search'], function(record, log, util, search) {
 
-function getVendorBankDetails(requestParms){
+function getVendorBankDetails(requestParams = {}){
   try {
 
     const offset = requestParams.offset ? parseInt(requestParams.offset, 10): 0;
@@ -181,7 +181,7 @@ function doPost(requestBody){
 }
   
 return {
-  get:doGet,
+  get:getVendorBankDetails,
   post:doPost,
   put:doPut,
 };
