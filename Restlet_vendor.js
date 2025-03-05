@@ -8,88 +8,78 @@
 * Created: 10th December 2024
 **/
 
-
 define (['N/record','N/log','N/util', 'N/search'], function(record, log, util, search) {
 
-  /**
-  * Function to get all Employee Bank details from the custom record ''CUSTOMRECORD_2663_ENTITY_BANK_DETAILS''
-  * offset and limit are optional parameters to get the records in a paginated way.
-  */
+function getVendorBankDetails(requestParms){
+  try {
 
-  function getEmployeeBankDetails(requestParams = {}) {
-    try {
+    const offset = requestParams.offset ? parseInt(requestParams.offset, 10): 0;
+    const limit = requestParams.limit ? parseInt(requestParams.limit, 10): 1000;
 
-      const offset = requestParams.offset ? parseInt(requestParams.offset, 10): 0;
-      const limit = requestParams.limit ? parseInt(requestParams.limit, 10): 1000;
-
-      const isValidNumber = /^\d+$/.test(requestParams.offset) && /^\d+$/.test(requestParams.limit);
+    const isValidNumber = /^\d+$/.test(requestParams.offset) && /^\d+$/.test(requestParams.limit);
       if (!isValidNumber || offset < 0 || limit <= 0) {
        return JSON.stringify({success: false, message: 'Invalid offset or limit.'});
      } 
 
-      const bankSearch = search.create({
-        type: 'CUSTOMRECORD_2663_ENTITY_BANK_DETAILS',
+    const bankSearch = search.create({
+      type: 'CUSTOMRECORD_2663_ENTITY_BANK_DETAILS',
         columns: [
-          'custrecord_2663_parent_employee',
+          'custrecord_2663_parent_vendor',
           'internalid',
           'name',
           'custrecord_2663_entity_acct_no',
           'custrecord_2663_entity_branch_no',
           'custrecord_2663_entity_bank_no'
-        ]
-      });
-      const searchResults = bankSearch.run().getRange({start: offset, end: offset + limit});
-      const bankAccounts = searchResults.map(result => ({
+    ]
+  });
+    const searchResults = bankSearch.run().getRange({start: offset, end: offset + limit});
+   
+    const bankAccounts = searchResults.map(result => ({
 
-         employee_internalID: result.getValue({name: 'custrecord_2663_parent_employee'}),
-         employeebankId: result.getValue({name: 'internalid'}),
-         name: result.getValue({name: 'name'}),
-         bankAccountNumber: result.getValue({name: 'custrecord_2663_entity_acct_no'}),
-         branchNumber: result.getValue({name: 'custrecord_2663_entity_branch_no'}),
-         bankNumber: result.getValue({name: 'custrecord_2663_entity_bank_no'})
-        
-        
-      }));
-      return JSON.stringify({
-        success: true,
-        bankAccounts: bankAccounts
-      });
-        
-    } catch (error) {
-      log.error({
-        title: 'Error in getEmployeeBankDetails function',
-        details: `Error fetching all Employee Bank details with params ${JSON.stringify(requestParams)}: ${error.message}`
-      });
-      return JSON.stringify({
-        success: false,
-        message: `Error fetching all Employee Bank details: ${error.message}`
-      });
-    }
+      vendor_internalID: result.getValue({name: 'custrecord_2663_parent_vendor'}),
+      vendorbankId: result.getValue({name: 'internalid'}),
+      name: result.getValue({name: 'name'}),
+      bankAccountNumber: result.getValue({name: 'custrecord_2663_entity_acct_no'}),
+      branchNumber: result.getValue({name: 'custrecord_2663_entity_branch_no'}),
+      bankNumber: result.getValue({name: 'custrecord_2663_entity_bank_no'})
+     
+   }));
+  return JSON.stringify({
+    success: true,
+    bankAccounts: bankAccounts
+  });
+  } catch (error) {
+    log.error({
+      title: 'Error in getVendorBankDetails function',
+      details: `Error fetching all Vendor Bank details with params ${JSON.stringify(requestParams)}: ${error.message}`
+    });
+    return JSON.stringify({
+      success: false,
+      message: `Error fetching all Vendor Bank details: ${error.message}`
+    });
   }
+}
+/***
+Can update multiple records for current vendors.
 
-/**
- * Function to update the existing records in the custom record ''CUSTOMRECORD_2663_ENTITY_BANK_DETAILS'' using the Employee Bank ID and Internal ID.
- * Supports multiple records update in a single request.
- * @param {*} requestBody 
- * @returns 
- */
-function updateEmployeeBankDetails(requestBody){
+***/
+function doPut(requestBody){
   const results = [];
 
   try {
     requestBody.forEach((recordData) =>{
 
     const{
-        employeebankID,
-        employee_internalID,
+        vendorbankID,
+        vendor_internalID,
         name,
         bankAccountNumber,
         branchNumber,
         bankNumber,
       } = recordData;    
 
-      if (!employeebankID) {
-        results.push({success:false, message: 'Employee Bank ID is required.'});
+      if (!vendorbankID) {
+        results.push({success:false, message: 'Vendor Bank ID is required.'});
         return;
       }
       if (!bankAccountNumber || !util.isNumber(Number(bankAccountNumber))) {
@@ -107,7 +97,7 @@ function updateEmployeeBankDetails(requestBody){
       try {
         const bankDetailsRecord = record.load({
           type:'CUSTOMRECORD_2663_ENTITY_BANK_DETAILS',
-          id: employeebankID
+          id: vendorbankID
         });
 
         if (name) {
@@ -123,7 +113,7 @@ function updateEmployeeBankDetails(requestBody){
            bankDetailsRecord.setValue({fieldId: 'custrecord_2663_entity_bank_no', value:bankNumber});
         }
         bankDetailsRecord.save();
-        results.push({success:true, message:'Record updated successfully.', employeebankID});
+        results.push({success:true, message:'Record updated successfully.', vendorbankID});
       } catch (err) {
         results.push({
           success:false,
@@ -141,21 +131,17 @@ function updateEmployeeBankDetails(requestBody){
   return JSON.stringify(results);
 }
   
-/**
- * Function to create new records in the custom record ''CUSTOMRECORD_2663_ENTITY_BANK_DETAILS''.
- * Supports multiple records creation in a single request.
- * @param {*} requestBody 
- * @returns 
- */
-
-function createEmployeeBankDetails(requestBody){
+/***
+Can update multiple records for new vendors
+***/
+function doPost(requestBody){
   const results =[];
 
   try {
     requestBody.forEach((recordData) =>{
-      const{employee_internalID, name, bankNumber, bankAccountNumber, branchNumber} = recordData;
+      const{vendor_internalID, name, bankNumber, bankAccountNumber, branchNumber} = recordData;
 
-      if (!employee_internalID || !name || !bankAccountNumber || !bankNumber ||!branchNumber) {
+      if (!vendor_internalID || !name || !bankAccountNumber || !bankNumber ||!branchNumber) {
         results.push({success: false, message: 'Missing required fields.', recordData});
         return;
       }
@@ -164,7 +150,7 @@ function createEmployeeBankDetails(requestBody){
           type: 'CUSTOMRECORD_2663_ENTITY_BANK_DETAILS',
           isDynamic:true
         });
-        newRecord.setValue({fieldId: 'custrecord_2663_parent_employee', value:employee_internalID});
+        newRecord.setValue({fieldId: 'custrecord_2663_parent_vendor', value:vendor_internalID});
         newRecord.setValue({fieldId: 'name', value: name });
         newRecord.setValue({fieldId: 'custrecord_2663_entity_file_format', value: 167 });
         newRecord.setValue({fieldId: 'custrecord_2663_entity_bank_type', value: 1 });
@@ -176,7 +162,7 @@ function createEmployeeBankDetails(requestBody){
         results.push({
           success:true,
           message:'Record created successfully',
-          employeebankId: recordId
+          vendorbankId: recordId
         });
       } catch (err) {
         results.push({
@@ -195,8 +181,11 @@ function createEmployeeBankDetails(requestBody){
 }
   
 return {
-  get:getEmployeeBankDetails,
-  post:createEmployeeBankDetails,
-  put:updateEmployeeBankDetails,
+  get:doGet,
+  post:doPost,
+  put:doPut,
 };
 });
+
+
+
