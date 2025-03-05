@@ -8,7 +8,13 @@
 * Created: 10th December 2024
 **/
 
+
 define (['N/record','N/log','N/util', 'N/search'], function(record, log, util, search) {
+
+  /**
+  * doGetAll function to get all Employee Bank details from the custom record ''CUSTOMRECORD_2663_ENTITY_BANK_DETAILS''
+  * offset and limit are optional parameters to get the records in a paginated way.
+  */
 
   function doGetAll(requestParams = {}) {
     try {
