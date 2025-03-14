@@ -16,20 +16,20 @@ define (['N/record','N/log','N/util', 'N/search'], function(record, log, util, s
   * offset and limit are optional parameters to get the records in a paginated way.
   */
 
-  function getEmployeeBankDetails(requestParams = {}) {
+  function getBankDetails(requestParams = {}) {
     try {
-
-      const offset = requestParams.offset ? parseInt(requestParams.offset, 10): 0;
-      const limit = requestParams.limit ? parseInt(requestParams.limit, 10): 1000;
+      const offset = requestParams.offset ? parseInt(requestParams.offset, 10) : 0;
+      const limit = requestParams.limit ? parseInt(requestParams.limit, 10) : 1000;
 
       const isValidNumber = /^\d+$/.test(requestParams.offset) && /^\d+$/.test(requestParams.limit);
       if (!isValidNumber || offset < 0 || limit <= 0) {
-       return JSON.stringify({success: false, message: 'Invalid offset or limit.'});
-     } 
+        return JSON.stringify({ success: false, message: 'Invalid offset or limit.' });
+      }
 
       const bankSearch = search.create({
         type: 'CUSTOMRECORD_2663_ENTITY_BANK_DETAILS',
         columns: [
+          'custrecord_2663_parent_employee',
           'custrecord_2663_parent_employee',
           'internalid',
           'name',
@@ -38,31 +38,31 @@ define (['N/record','N/log','N/util', 'N/search'], function(record, log, util, s
           'custrecord_2663_entity_bank_no'
         ]
       });
-      const searchResults = bankSearch.run().getRange({start: offset, end: offset + limit});
+      const searchResults = bankSearch.run().getRange({ start: offset, end: offset + limit });
       const bankAccounts = searchResults.map(result => ({
-
-         employee_internalID: result.getValue({name: 'custrecord_2663_parent_employee'}),
-         employeebankId: result.getValue({name: 'internalid'}),
-         name: result.getValue({name: 'name'}),
-         bankAccountNumber: result.getValue({name: 'custrecord_2663_entity_acct_no'}),
-         branchNumber: result.getValue({name: 'custrecord_2663_entity_branch_no'}),
-         bankNumber: result.getValue({name: 'custrecord_2663_entity_bank_no'})
-        
-        
+        employee_internalID: result.getValue({ name: 'custrecord_2663_parent_employee' }),
+        vendor_internalID: result.getValue({ name: 'custrecord_2663_parent_vendor' }),
+        employeebankId: result.getValue({ name: 'internalid' }),
+        name: result.getValue({ name: 'name' }),
+        bankAccountNumber: result.getValue({ name: 'custrecord_2663_entity_acct_no' }),
+        branchNumber: result.getValue({ name: 'custrecord_2663_entity_branch_no' }),
+        bankNumber: result.getValue({ name: 'custrecord_2663_entity_bank_no' })
       }));
+
       return JSON.stringify({
         success: true,
-        bankAccounts: bankAccounts
+        bankAccounts: bankAccounts,
+        count: bankAccounts.length
       });
-        
+
     } catch (error) {
       log.error({
-        title: 'Error in getEmployeeBankDetails function',
-        details: `Error fetching all Employee Bank details with params ${JSON.stringify(requestParams)}: ${error.message}`
+        title: 'Error in getBankDetails function',
+        details: `Error fetching all Employee and Vendor Bank details with params ${JSON.stringify(requestParams)}: ${error.message}`
       });
       return JSON.stringify({
         success: false,
-        message: `Error fetching all Employee Bank details: ${error.message}`
+        message: `Error fetching all Employee and Vendor Bank details: ${error.message}`
       });
     }
   }
@@ -195,7 +195,7 @@ function createEmployeeBankDetails(requestBody){
 }
   
 return {
-  get:getEmployeeBankDetails,
+  get:getBankDetails,
   post:createEmployeeBankDetails,
   put:updateEmployeeBankDetails,
 };
