@@ -1,4 +1,5 @@
 Problem Statement
+
 NetSuite is the source of truth for vendor, customer, and employee disbursements, but its native APIs do not support direct creation or updating of bank account details for these entities.
 Business teams maintain accurate bank info in external systems:
 - Vendors & Customers → MySQL (synced to Snowflake)
