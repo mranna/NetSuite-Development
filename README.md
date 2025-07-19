@@ -1,10 +1,10 @@
 Problem Statement
-Manual bank account entry for vendors and employees into NetSuite was time-consuming, error-prone, and lacked real-time validation. Payment-related data was entered from an external website manually, resulting in:
-- Frequent entry errors
-- Sync issues with payment runs
-- Compliance and audit risks
-
-Goal: lower error rate and cut latency to ≤ 15 min without expanding human headcount.
+NetSuite is the source of truth for vendor, customer, and employee disbursements, but its native APIs do not support direct creation or updating of bank account details for these entities.
+Business teams maintain accurate bank info in external systems:
+- Vendors & Customers → MySQL (synced to Snowflake)
+- Employees → UKG Pro (flat files)
+Due to the API limitation, updates were manual—causing payment delays, data errors, and compliance risks.
+To fix this, I developed custom NetSuite RESTlets that allow secure, automated GET/POST/PUT operations on bank account fields for each entity type.
 
 Architecture
 
@@ -23,3 +23,5 @@ Architecture
                     |
        Inserts/Updates Vendor & Employee Records
 
+
+Second use case required filtering open invoices by vendors, employee, which was also addressed via a targeted SuiteScript RESTlet or PORTlet (Dashboards).
